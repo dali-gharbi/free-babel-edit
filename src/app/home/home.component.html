@@ -1,5 +1,5 @@
 <div class="container">
-  <mat-card class="example-card">
+  <mat-card class="open-folder-card">
     <mat-card-header>
       <div mat-card-avatar class="example-header-image"></div>
       <mat-card-title>{{ 'PAGES.HOME.TITLE' | translate }}</mat-card-title>
@@ -12,8 +12,8 @@
         bred for hunting.
       </p>
     </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary">Open Folder</button>
+    <mat-card-actions align="end">
+      <button mat-raised-button color="primary" (click)="openFolder($event)">Open Folder</button>
     </mat-card-actions>
   </mat-card>
 </div>
