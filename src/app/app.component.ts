@@ -25,4 +25,8 @@ export class AppComponent {
       console.log('Mode web');
     }
   }
+
+  openProject(){
+    
+  }
 }
