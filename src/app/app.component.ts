@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
-import { ElectronService } from './core/services';
+import { ElectronService, ConfigStoreService } from './core/services';
 import { TranslateService } from '@ngx-translate/core';
 import { AppConfig } from '../environments/environment';
+import { ProjectManagerService } from './core/services/project-manager.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -10,8 +12,11 @@ import { AppConfig } from '../environments/environment';
 })
 export class AppComponent {
   constructor(
-    public electronService: ElectronService,
-    private translate: TranslateService
+    private electronService: ElectronService,
+    private translate: TranslateService,
+    private projectManagerService: ProjectManagerService,
+    private configStoreService: ConfigStoreService,
+    private router: Router
   ) {
     translate.setDefaultLang('en');
     console.log('AppConfig', AppConfig);
@@ -26,7 +31,15 @@ export class AppComponent {
     }
   }
 
-  openProject(){
-    
+  openProject(event){
+    this.projectManagerService.openFolder(event);
+  }
+
+  quitProject() {
+    this.projectManagerService.selectedDirectory = null;
+    this.projectManagerService.filesData = {};
+    this.configStoreService.set('selectedDirectory', null);
+    this.configStoreService.set('files', null)
+    this.router.navigate(['']);
   }
 }

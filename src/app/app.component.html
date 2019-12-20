@@ -1,11 +1,58 @@
-<mat-toolbar color="primary">
+<mat-toolbar color="primary"  class="position-fixed">
     <mat-toolbar-row>
-        <button mat-icon-button>
-            <mat-icon (click)="openProject()">folder_open</mat-icon>
-            open project
+        <button mat-icon-button matTooltip="Open project" class="toolbar-icon">
+            <mat-icon (click)="openProject($event)" inline=false>folder_open</mat-icon>
+            <!-- <div>Open project</div> -->
         </button>
         <span class="menu-spacer"></span>
+        <button mat-icon-button matTooltip="Save project" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>save</mat-icon>
+        </button>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <button mat-icon-button matTooltip="Add ID" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>playlist_add</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Remove IDs" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>delete_sweep</mat-icon>
+        </button>
+        <span class="menu-spacer"></span>
+        <button mat-icon-button matTooltip="Languages list" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>language</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Add language" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>add_circle</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Remove language" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>delete_outline</mat-icon>
+        </button>
 
+        <button mat-icon-button matTooltip="Settings" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>settings_applications</mat-icon>
+        </button>
+
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <button mat-icon-button matTooltip="Undo" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>undo</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Redo" class="toolbar-icon">
+            <mat-icon (click)="saveProject()" inline=false>redo</mat-icon>
+        </button>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <span class="menu-spacer"></span>
+        <button mat-icon-button matTooltip="Quit project" class="toolbar-icon">
+            <mat-icon (click)="quitProject()" inline=false>exit_to_app</mat-icon>
+        </button>
     </mat-toolbar-row>
 </mat-toolbar>
-<router-outlet></router-outlet>
+    <router-outlet></router-outlet>

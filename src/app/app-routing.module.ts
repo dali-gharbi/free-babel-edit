@@ -9,6 +9,10 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'project',
+    loadChildren:'./project/project.module#ProjectModule',
+  },
+  {
     path: '**',
     component: PageNotFoundComponent
   }
