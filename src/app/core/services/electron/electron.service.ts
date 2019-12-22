@@ -17,6 +17,7 @@ export class ElectronService {
   fs: typeof fs;
   app: typeof app;
   path: typeof path;
+  // browserWindow: typeof Electron.BrowserWindow;
   get isElectron(): boolean {
     return window && window.process && window.process.type;
   }

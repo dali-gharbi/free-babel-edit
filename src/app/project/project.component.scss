@@ -1,8 +1,8 @@
 .container {
     height: calc(100vh - 64px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    // display: flex;
+    // align-items: center;
+    // justify-content: center;
 }
 
 /**  STYLE 11 */
@@ -14,7 +14,7 @@
   
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background: linear-gradient(left, #fff, #e4e4e4);
+    background: linear-gradient(to left, #fff, #e4e4e4);
     border: 1px solid #aaa;
   }
   
@@ -23,5 +23,34 @@
   }
   
 ::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(left, #22ADD4, #1E98BA);
+    background: linear-gradient(to left, #22ADD4, #1E98BA);
   }
+  rsz-layout.cell {
+    padding: 1em 1.4em;
+    &.one {
+        text-align: center;
+    }
+    &.two {
+        // background: $color4;
+    }
+    &.three {
+        // background: $color5;
+    }
+    &.four {
+    }
+}
+.splitted-pane{
+  height: calc(100% - 4px);
+}
+
+  .example-tree-invisible {
+    display: none;
+  }
+  
+  .example-tree ul,
+  .example-tree li {
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+  }
+  

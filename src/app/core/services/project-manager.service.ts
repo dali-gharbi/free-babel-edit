@@ -17,12 +17,12 @@ export class ProjectManagerService {
         private configStoreService: ConfigStoreService,
         private router: Router) {
 
-            //Initially load files in files Data
-            if(this.configStoreService.data && this.configStoreService.data.selectedDirectory) {
-                this.selectedDirectory = this.configStoreService.data.selectedDirectory; 
-                this.listFiles(this.selectedDirectory);
-            }
-         }
+        //Initially load files in files Data
+        if (this.configStoreService.data && this.configStoreService.data.selectedDirectory) {
+            this.selectedDirectory = this.configStoreService.data.selectedDirectory;
+            this.listFiles(this.selectedDirectory);
+        }
+    }
 
     get rootKeys(): string[] {
         let keys: string[] = [];
@@ -36,7 +36,7 @@ export class ProjectManagerService {
     }
 
     openFolder(event) {
-        from(this.electron.remote.dialog.showOpenDialog({
+        from(this.electron.remote.dialog.showOpenDialog(this.electron.remote.getCurrentWindow(), {
             title: 'Choose i18n Folder',
             properties: ['openDirectory'],
             message: 'e5tar doussi i18n'
@@ -58,7 +58,7 @@ export class ProjectManagerService {
         for (let index = 0; index < files.length; index++) {
             const file: string = files[index];
             // Do whatever you want to do with the file
-            
+
             //test if it's i18n file
             if (file.indexOf('.json') > -1) {
                 const fullPath: string = this.electron.path.join(directory, file);
@@ -70,8 +70,8 @@ export class ProjectManagerService {
                     data = this.readFile(fullPath);
                     if (data) {
                         this.filesData[file] = data;
-                        console.log('data',data);
-                        
+                        console.log('data', data);
+
                     }
                 }
             }
