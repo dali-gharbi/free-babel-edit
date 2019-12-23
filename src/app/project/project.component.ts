@@ -43,8 +43,9 @@ export class ProjectComponent implements OnInit {
 
   hasNestedChild = (_: number, nodeData: KeyNode) => nodeData.children;
 
-  hasNoContent = (_: number, _nodeData: KeyNode) => _nodeData.value === '';
 
+  hasNoKey = (_: number, _nodeData: KeyNode) => _nodeData.key === null || _nodeData.key === '';
+  
   /**
  * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
  * The return value is the list of `FileNode`.
@@ -125,11 +126,15 @@ export class ProjectComponent implements OnInit {
 
 
   /** Select the category so we can insert the new item. */
-  // addNewItem(node: KeyNode) {
-  //   const parentNode = this.flatNodeMap.get(node);
-  //   this.nestedDataSource.insertItem(parentNode!, '');
-  //   this.treeControl.expand(node);
-  // }
+  addNewItem(node: KeyNode) {
+    console.log(node);
+    node.children.push({key: null, children: [] , final: true, value: node.value})
+    // const parentNode = this.flatNodeMap.get(node);
+    // this.nestedDataSource.insertItem(parentNode!, '');
+    // this.treeControl.expand(node);
+    this.nestedTreeControl.expand(node)
+
+  }
 
   /** Save the node to database */
   // saveNode(node: KeyNode, itemValue: string) {
