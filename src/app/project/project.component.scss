@@ -6,25 +6,34 @@
 }
 
 /**  STYLE 11 */
-::-webkit-scrollbar-track {
-    border-radius: 10px;
-    background: rgba(0,0,0,0.1);
-    border: 1px solid #ccc;
-  }
+// ::-webkit-scrollbar-track {
+//     border-radius: 10px;
+//     background: rgba(0,0,0,0.1);
+//     border: 1px solid #ccc;
+//   }
   
-::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background: linear-gradient(to left, #fff, #e4e4e4);
-    border: 1px solid #aaa;
-  }
+// ::-webkit-scrollbar-thumb {
+//     border-radius: 10px;
+//     background: linear-gradient(to left, #fff, #e4e4e4);
+//     border: 1px solid #aaa;
+//   }
   
-::-webkit-scrollbar-thumb:hover {
-    background: #fff;
-  }
+// ::-webkit-scrollbar-thumb:hover {
+//     background: #fff;
+//   }
   
-::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(to left, #22ADD4, #1E98BA);
+// ::-webkit-scrollbar-thumb:active {
+//     background: linear-gradient(to left, #22ADD4, #1E98BA);
+//   }
+
+rsz-layout.right-cell {
+  .content {
+
   }
+  // margin: 1em 1.4em;
+   overflow: auto;  
+  // background-color:#f0f0f0;
+}
   rsz-layout.cell {
     padding: 1em 1.4em;
     &.one {
