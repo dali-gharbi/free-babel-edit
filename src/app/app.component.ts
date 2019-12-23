@@ -35,9 +35,13 @@ export class AppComponent {
     this.projectManagerService.openFolder(event);
   }
 
+  saveProject() {
+    this.projectManagerService.saveProject();
+  }
+
   quitProject() {
     this.projectManagerService.selectedDirectory = null;
-    this.projectManagerService.filesData = {};
+    this.projectManagerService.filesData.next({});
     this.configStoreService.set('selectedDirectory', null);
     this.configStoreService.set('files', null)
     this.router.navigate(['']);

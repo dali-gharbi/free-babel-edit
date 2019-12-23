@@ -29,6 +29,7 @@
                     {{nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                   </mat-icon>
                 </button>
+                <!-- {{node.key}} -->
                 <button mat-flat-button (click)="editLeaf(node)">{{node.key}}</button>
               </div>
               <ul [class.example-tree-invisible]="!nestedTreeControl.isExpanded(node)">
@@ -54,9 +55,9 @@
                   <!-- {{panelOpenState ? 'open' : 'closed'}} -->
                 </mat-panel-description>
               </mat-expansion-panel-header>
-              <div *ngFor="let lang of projectManagerService.filesData | keyvalue">
+              <div *ngFor="let lang of ((projectManagerService.filesData | async) | keyvalue)">
                 <mat-form-field style="width: 100%;">
-                  <input matInput [placeholder]="lang.key" [value]="getValueByKey(lang.value, nodeValue)">
+                  <input matInput [placeholder]="lang.key" [ngModel]="getValueByKey(lang.value, nodeValue)" (ngModelChange)="setValueByKey(lang.value, nodeValue, $event)" >
                 </mat-form-field>
               </div>
             </mat-expansion-panel>

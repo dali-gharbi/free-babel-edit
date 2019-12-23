@@ -33,7 +33,10 @@ export class ProjectComponent implements OnInit {
 
     this.nestedTreeControl = new NestedTreeControl<KeyNode>(this._getChildren);
     this.nestedDataSource = new MatTreeNestedDataSource();
-    this.nestedDataSource.data = this.buildFileTree(this.projectManagerService.filesData['fr.json'], 0);
+    this.projectManagerService.filesData.subscribe(data => {
+      console.log(data);
+      this.nestedDataSource.data = this.buildFileTree(data['fr.json'], 0);
+    })
   }
 
   private _getChildren = (node: KeyNode) => node.children;
@@ -46,8 +49,8 @@ export class ProjectComponent implements OnInit {
  * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
  * The return value is the list of `FileNode`.
  */
-  buildFileTree(obj: { [key: string]: any }, level: number, parentNode?: KeyNode): KeyNode[] {
-    return Object.keys(obj).reduce<KeyNode[]>((accumulator, key) => {
+  private buildFileTree(obj: { [key: string]: any }, level: number, parentNode?: KeyNode): KeyNode[] {
+    return Object.keys(obj).sort().reduce<KeyNode[]>((accumulator, key) => {
       const value = obj[key];
       const node = new KeyNode();
       node.key = key;
@@ -63,12 +66,11 @@ export class ProjectComponent implements OnInit {
           node.final = true;
         }
       }
-
-
       return accumulator.concat(node);
     }, []);
   }
 
+  // called when we selct node
   editLeaf(node: KeyNode) {
     this.selectedNode = node;
     if (!this.selectedNode.final) {
@@ -88,9 +90,10 @@ export class ProjectComponent implements OnInit {
         if (!n.children) {
           nodeValues.push(n.value);
         } else {
-          this.selectedNode.children.forEach(v => {
+          for (let index = 0; index < n.children.length; index++) {
+            const v = n.children[index];
             fillArray(v);
-          })
+          }
         }
       }
       fillArray(this.selectedNode);
@@ -99,12 +102,22 @@ export class ProjectComponent implements OnInit {
     return [];
   }
 
-  getValueByKey(value: any, key: string) {
+  getValueByKey(value: any, key: string): string {
     try {
       return eval("value." + key);
     } catch (e) {
       return undefined;
     }
+  }
+  setValueByKey(value: any, key: string, event: any): void {
+    eval("value." + key + ' = event;')
+    // this.projectManagerService.filesData.next(this.projectManagerService.filesData.value)
+
+    // try {
+    //   return eval("value." + key);
+    // } catch (e) {
+    //   return undefined;
+    // }
   }
 
 

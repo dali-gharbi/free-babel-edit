@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ElectronService } from './electron/electron.service';
 import { ConfigStoreService } from './config-store.service';
 import { Router } from '@angular/router';
-import { from } from 'rxjs';
+import { from, BehaviorSubject } from 'rxjs';
 
 
 @Injectable({
@@ -11,7 +11,7 @@ import { from } from 'rxjs';
 export class ProjectManagerService {
 
     selectedDirectory: string;
-    filesData: { [key: string]: any } = {};
+    filesData: BehaviorSubject<{ [key: string]: any }> = new BehaviorSubject<{ [key: string]: any }>( {})
 
     constructor(private electron: ElectronService,
         private configStoreService: ConfigStoreService,
@@ -26,9 +26,9 @@ export class ProjectManagerService {
 
     get rootKeys(): string[] {
         let keys: string[] = [];
-        for (const key in this.filesData) {
-            if (this.filesData.hasOwnProperty(key)) {
-                const element = this.filesData[key];
+        for (const key in this.filesData.value) {
+            if (this.filesData.value.hasOwnProperty(key)) {
+                const element = this.filesData.value[key];
                 keys = [...keys, ...Object.keys(element)]
             }
         }
@@ -55,6 +55,7 @@ export class ProjectManagerService {
     listFiles(directory: string) {
         const files: string[] = this.electron.fs.readdirSync(directory);
         //listing all files using forEach
+        let filesData: { [key: string]: any }  = {};
         for (let index = 0; index < files.length; index++) {
             const file: string = files[index];
             // Do whatever you want to do with the file
@@ -69,15 +70,19 @@ export class ProjectManagerService {
                     // test if it's a valid json
                     data = this.readFile(fullPath);
                     if (data) {
-                        this.filesData[file] = data;
+                        filesData[file] = data;
                         console.log('data', data);
 
+                    } else {
+                        filesData[file] = {}
                     }
                 }
             }
         }
+        this.filesData.next(filesData);
         this.configStoreService.set('selectedDirectory', this.selectedDirectory);
-        this.configStoreService.set('files', Object.keys(this.filesData));
+        this.configStoreService.set('files', Object.keys(filesData));
+
         this.router.navigate(['project']);
     }
 
@@ -94,6 +99,18 @@ export class ProjectManagerService {
         } catch (e) {
             // failed to parse
             return null;
+        }
+    }
+
+    saveProject() {
+        const direcotry = this.configStoreService.get('selectedDirectory');
+        const files : string[] = this.configStoreService.get('files');
+        for (const key in this.filesData.value) {
+            if (this.filesData.value.hasOwnProperty(key)) {
+                const element = this.filesData.value[key];
+                const jsonContent = JSON.stringify(element, null, "\t");
+                this.electron.fs.writeFileSync(this.electron.path.join(direcotry, key),jsonContent,'utf8');
+            }
         }
     }
 }
