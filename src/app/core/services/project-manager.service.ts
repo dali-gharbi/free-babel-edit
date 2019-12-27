@@ -3,6 +3,7 @@ import { ElectronService } from './electron/electron.service';
 import { ConfigStoreService } from './config-store.service';
 import { Router } from '@angular/router';
 import { from, BehaviorSubject } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Injectable({
@@ -11,10 +12,11 @@ import { from, BehaviorSubject } from 'rxjs';
 export class ProjectManagerService {
 
     selectedDirectory: string;
-    filesData: BehaviorSubject<{ [key: string]: any }> = new BehaviorSubject<{ [key: string]: any }>( {})
+    filesData: BehaviorSubject<{ [key: string]: any }> = new BehaviorSubject<{ [key: string]: any }>({})
 
     constructor(private electron: ElectronService,
         private configStoreService: ConfigStoreService,
+        private snackBar: MatSnackBar,
         private router: Router) {
 
         //Initially load files in files Data
@@ -24,15 +26,117 @@ export class ProjectManagerService {
         }
     }
 
-    get rootKeys(): string[] {
-        let keys: string[] = [];
-        for (const key in this.filesData.value) {
-            if (this.filesData.value.hasOwnProperty(key)) {
-                const element = this.filesData.value[key];
-                keys = [...keys, ...Object.keys(element)]
+    /** correction du json */
+    private pushKeys(keys: Map<string, string>, prefix: string, ...files: any[]) {
+        for (let index = 0; index < files.length; index++) {
+            const obj = eval( 'files[index]' + prefix);
+            for (let key in obj) {
+                key = key.trim();
+                if (obj.hasOwnProperty(key)) {
+                    const type = typeof (obj[key]);
+                    if (keys.has(key)) {
+                        if (keys.get(key) === 'string' && 'string' === type) {
+                            keys.get(key)
+                        } else {
+                            keys.set(key, type);
+                        }
+                    } else {
+                        keys.set(key, type);
+                    }
+                }
             }
         }
-        return keys
+    }
+
+    private addMissingKeys(keys: Map<string, string>, prefix:string , ...files: any[]) {
+        keys.forEach((t: string, k: string) => {
+            for (let index = 0; index < files.length; index++) {
+                // for (const key in objects) {
+                //     if (objects.hasOwnProperty(key)) {
+                //         const object = objects[key];
+                // console.log('########### files[index]'+ prefix + '[k]');
+
+                // val dosent keep reference
+                const val = eval('files[index]'+ prefix + '[k]');
+                if (val === undefined) {
+                    if (t === 'string') {
+                        // val = '';
+                        eval('files[index]'+ prefix + '[k] = ""')
+                        console.log('init', k);
+                        this.snackBar.open('Initialized ' + prefix + '.' + k +' to empty string', 'OK', {
+                            duration: 2000,
+                          });
+
+                        // files[index][k] = '';
+                    } else {
+                        // val = {}
+                        eval('files[index]'+ prefix + '[k] = {}')
+                        this.snackBar.open('Initialized ' + prefix + '.' + k +' to empty object', 'OK', {
+                            duration: 2000,
+                          });
+                        console.log('init', k);
+                        // files[index][k] = {};
+                    }
+                } else if (typeof val === 'string' && t === 'object') {
+                    // TODO we force this or not
+                    // files[index][k] = {};
+                    console.log('converted to object', k);
+                    // val = {};
+                    eval('files[index]'+ prefix + '[k] = {}')
+                }
+
+                //     }
+                // }
+            }
+            if(t === 'object') {
+                const mergedPrefix = prefix === '' ? ('.' +k) : (prefix + '.' + k);
+                // console.log( 'run recursion on' , mergedPrefix);
+                this.addMissingKeysToFiles(files, mergedPrefix)
+            }
+        })
+    }
+
+    private addMissingKeysToFiles(files: any[], prefix: string = '') {
+        let keys: Map<string, string> = new Map<string, string>();
+        this.pushKeys(keys, prefix, ...files);
+        this.addMissingKeys(keys, prefix, ...files);
+    }
+
+    // mergeKeys(object: any): string[] {
+    //     Object.assign
+    //     let keys: string[] = [];
+    //     for (const key in object) {
+    //         if (object.hasOwnProperty(key)) {
+    //             const element = object[key];
+    //             keys = [...keys, ...Object.keys(element)]
+    //         }
+    //     }
+    //     return keys
+    // }
+
+    private tryAddProperty(key: string, file: any, type: 'string' | 'object') {
+        console.log(key);
+        console.log(file);
+        
+        try {
+            if(type === 'string') {
+                eval('file.' +key +' = ""')
+            } else {
+                eval('file.' +key +' = {}')
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    public addKeyToAllFiles(key: string, type: 'string' | 'object') {
+        for (const filename in this.filesData.value) {
+            if (this.filesData.value.hasOwnProperty(filename)) {
+                let file = this.filesData.value[filename];
+                this.tryAddProperty(key, file, type);
+            }
+        }
+        this.filesData.next(this.filesData.value);
     }
 
     openFolder(event) {
@@ -55,7 +159,7 @@ export class ProjectManagerService {
     listFiles(directory: string) {
         const files: string[] = this.electron.fs.readdirSync(directory);
         //listing all files using forEach
-        let filesData: { [key: string]: any }  = {};
+        let filesData: { [key: string]: any } = {};
         for (let index = 0; index < files.length; index++) {
             const file: string = files[index];
             // Do whatever you want to do with the file
@@ -71,7 +175,7 @@ export class ProjectManagerService {
                     data = this.readFile(fullPath);
                     if (data) {
                         filesData[file] = data;
-                        console.log('data', data);
+                        console.log('originaldata', data);
 
                     } else {
                         filesData[file] = {}
@@ -79,6 +183,24 @@ export class ProjectManagerService {
                 }
             }
         }
+
+        // ajout des keys manquants 
+        const filesName: any[] = new Array();
+        let filesValue: any[] = [];
+        for (const key in filesData) {
+            if (filesData.hasOwnProperty(key)) {
+                const element = filesData[key];
+                filesName.push(key);
+                filesValue.push(element);
+            }
+        }
+        this.addMissingKeysToFiles(filesValue);
+        for (let index = 0; index < filesName.length; index++) {
+            const name = filesName[index];
+            filesData[name] =  filesValue[index];
+        }
+        // fin ajout des keys manquants 
+        
         this.filesData.next(filesData);
         this.configStoreService.set('selectedDirectory', this.selectedDirectory);
         this.configStoreService.set('files', Object.keys(filesData));
@@ -104,12 +226,12 @@ export class ProjectManagerService {
 
     saveProject() {
         const direcotry = this.configStoreService.get('selectedDirectory');
-        const files : string[] = this.configStoreService.get('files');
+        const files: string[] = this.configStoreService.get('files');
         for (const key in this.filesData.value) {
             if (this.filesData.value.hasOwnProperty(key)) {
                 const element = this.filesData.value[key];
                 const jsonContent = JSON.stringify(element, null, "\t");
-                this.electron.fs.writeFileSync(this.electron.path.join(direcotry, key),jsonContent,'utf8');
+                this.electron.fs.writeFileSync(this.electron.path.join(direcotry, key), jsonContent, 'utf8');
             }
         }
     }

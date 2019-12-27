@@ -16,6 +16,10 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatDividerModule } from '@angular/material/divider';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatInputModule} from '@angular/material/input';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+import { NewNodeDialogComponent } from './components/new-node-dialog/new-node-dialog.component';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 const material = [
   MatButtonModule,
@@ -27,14 +31,18 @@ const material = [
   MatGridListModule,
   MatDividerModule,
   MatExpansionModule,
-  MatInputModule
+  MatInputModule,
+  MatCheckboxModule,
+  MatDialogModule,
+  MatSnackBarModule
 ];
 
 @NgModule({
-  declarations: [PageNotFoundComponent, WebviewDirective],
+  declarations: [PageNotFoundComponent, WebviewDirective, NewNodeDialogComponent],
+  entryComponents: [NewNodeDialogComponent],
   imports: [CommonModule, TranslateModule, FormsModule, ...material
   ],
-  exports: [TranslateModule, WebviewDirective, FormsModule, ...material
+  exports: [TranslateModule, WebviewDirective, NewNodeDialogComponent, FormsModule, ...material
   ]
 })
 export class SharedModule { }

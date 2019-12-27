@@ -1,0 +1,11 @@
+<h2 mat-dialog-title align="center">Add Translation ID</h2>
+<div mat-dialog-content align="center">
+  <!-- <p>{{data.key}}</p> -->
+  <mat-form-field style="width: 100%;">
+    <input matInput [(ngModel)]="newNode.value">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button cdkFocusInitial (click)="save()">Confirm</button>
+</div>
