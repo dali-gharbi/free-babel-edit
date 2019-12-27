@@ -36,7 +36,7 @@ export class ProjectManagerService {
                     const type = typeof (obj[key]);
                     if (keys.has(key)) {
                         if (keys.get(key) === 'string' && 'string' === type) {
-                            keys.get(key)
+                            // keys.get(key)
                         } else {
                             keys.set(key, type);
                         }
@@ -97,6 +97,7 @@ export class ProjectManagerService {
     }
 
     private addMissingKeysToFiles(files: any[], prefix: string = '') {
+        // first string is object name, second is object type
         let keys: Map<string, string> = new Map<string, string>();
         this.pushKeys(keys, prefix, ...files);
         this.addMissingKeys(keys, prefix, ...files);
@@ -157,31 +158,27 @@ export class ProjectManagerService {
     }
 
     listFiles(directory: string) {
-        const files: string[] = this.electron.fs.readdirSync(directory);
+        const fileNames: string[] = this.electron.fs.readdirSync(directory);
         //listing all files using forEach
         let filesData: { [key: string]: any } = {};
-        for (let index = 0; index < files.length; index++) {
-            const file: string = files[index];
+        for (let index = 0; index < fileNames.length; index++) {
+            const fileName: string = fileNames[index];
             // Do whatever you want to do with the file
-
-            //test if it's i18n file
-            if (file.indexOf('.json') > -1) {
-                const fullPath: string = this.electron.path.join(directory, file);
-                let data: any;
+                const fullPath: string = this.electron.path.join(directory, fileName);
+                 //test if it's i18n file
                 // test if it's a file
-                if (this.electron.fs.lstatSync(fullPath).isFile()) {
-                    console.log('file', file);
+                if (this.electron.fs.lstatSync(fullPath).isFile() && fileName.indexOf('.json') > -1) {
+                    console.log('file', fileName);
                     // test if it's a valid json
-                    data = this.readFile(fullPath);
+                    let data: any = this.readJsonFile(fullPath);
                     if (data) {
-                        filesData[file] = data;
+                        filesData[fileName] = data;
                         console.log('originaldata', data);
 
                     } else {
-                        filesData[file] = {}
+                        filesData[fileName] = {};
                     }
                 }
-            }
         }
 
         // ajout des keys manquants 
@@ -208,7 +205,7 @@ export class ProjectManagerService {
         this.router.navigate(['project']);
     }
 
-    readFile(fileDir: string) {
+    readJsonFile(fileDir: string) {
         const data = this.electron.fs.readFileSync(fileDir, 'utf-8');
         return this.validateJSON(data);
     }

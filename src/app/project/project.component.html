@@ -3,7 +3,11 @@
     <rsz-layout class="left-cell" [directions]="['right']" [rFlex]="true">
       <div style="height: 20px; width: auto; background-color: #dddddd;">
         Translations IDs</div>
-      <div style="overflow: auto; height: calc(100% - 20px);">
+        <mat-form-field style="height: 70px; width: auto;">
+          <input matInput placeholder="Search" (input)="filterChanged($event.target.value)">
+       </mat-form-field>
+      <div style="overflow: auto; height: calc(100% - 20px - 70px);">
+
         <mat-tree [dataSource]="nestedDataSource" [treeControl]="nestedTreeControl" class="example-tree">
           <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
             <li class="mat-tree-node">

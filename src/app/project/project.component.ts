@@ -30,7 +30,7 @@ export class ProjectComponent implements OnInit {
     private dialog: MatDialog) { }
 
   ngOnInit() {
-    
+
     this.nestedTreeControl = new NestedTreeControl<KeyNode>(this._getChildren);
     this.nestedDataSource = new MatTreeNestedDataSource();
     this.projectManagerService.filesData.subscribe(data => {
@@ -161,6 +161,16 @@ export class ProjectComponent implements OnInit {
   }
 
   /** fin selection */
+
+  /** begin filter  */
+  filterChanged(filterText: string) {
+    // this.database.filter(filterText);
+    if (filterText) {
+      this.nestedTreeControl.expandAll();
+    } else {
+      this.nestedTreeControl.collapseAll();
+    }
+  }
   //#endregion #################### TREE VIEW ##################
 
 
@@ -225,7 +235,7 @@ export class ProjectComponent implements OnInit {
       console.log(result);
       console.log(node);
       this.projectManagerService.addKeyToAllFiles(result.value, 'string');
-      if(result) {
+      if (result) {
         this.nestedTreeControl.expand(node)
       }
     });
