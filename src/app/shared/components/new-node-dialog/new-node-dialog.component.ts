@@ -11,13 +11,14 @@ export class NewNodeDialogComponent implements OnInit {
   public newNode: KeyNode = new KeyNode();
   constructor(
     public dialogRef: MatDialogRef<NewNodeDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: KeyNode) {
-      this.newNode.key = this.data ? this.data.key : '';
-      this.newNode.value = this.data ? this.data.value.trimRight() + '.' : '';
+    @Inject(MAT_DIALOG_DATA) private data: KeyNode = new KeyNode) {
+      this.newNode.key = this.data.key ? this.data.key : '';
+      this.newNode.value = this.data.value ? this.data.value.trimRight() + '.' : '';
   }
 
   // [mat-dialog-close]="data.value"
   save() {
+    console.log(this.newNode);
     this.dialogRef.close(this.newNode);
   }
 

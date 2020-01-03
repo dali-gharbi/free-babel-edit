@@ -3,18 +3,26 @@
     <rsz-layout class="left-cell" [directions]="['right']" [rFlex]="true">
       <div style="height: 20px; width: auto; background-color: #dddddd;">
         Translations IDs</div>
-        <mat-form-field style="height: 70px; width: auto;">
-          <input matInput placeholder="Search" (input)="filterChanged($event.target.value)">
-       </mat-form-field>
-      <div style="overflow: auto; height: calc(100% - 20px - 70px);">
+      <mat-form-field style="height: 50px; width: 100%;">
+        <input matInput placeholder="Search" (keyup)="searchKeyEvent.next($event)">
+        <!-- <button *ngIf="filterText" mat-button matSuffix mat-icon-button aria-label="Clear" (click)="searchKeyEvent.next({value: null})">
+          <mat-icon>close</mat-icon>
+          </button> -->
+      </mat-form-field>
+      <div style="overflow: auto; height: calc(100% - 20px - 50px);">
 
         <mat-tree [dataSource]="nestedDataSource" [treeControl]="nestedTreeControl" class="example-tree">
           <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
             <li class="mat-tree-node">
               <button mat-icon-button disabled></button>
               <mat-checkbox class="checklist-leaf-node" [checked]="checklistSelection.isSelected(node)"
-                (change)="leafItemSelectionToggle(node)">
-                {{node.key}}
+                (contextmenu)="onContextMenu($event, node)" (change)="leafItemSelectionToggle(node)">
+                <ng-container *ngIf="node.editing; else elseTemplate">
+                  <input matInput [value]="node.key" (input)="changeKey($event, node)">
+                </ng-container>
+                <ng-template #elseTemplate>
+                    {{node.key}} {{node.visible}}
+                </ng-template>
               </mat-checkbox>
               <!-- <button mat-flat-button (click)="editLeaf(node)">{{node.key}}</button> -->
               <!-- <a mat-button routerLink=".">Link</a> -->
@@ -40,9 +48,12 @@
                 <!-- {{node.key}} -->
                 <!-- <button mat-flat-button (click)="editLeaf(node)">{{node.key}}</button> -->
                 <mat-checkbox [checked]="descendantsAllSelected(node)"
-                  [indeterminate]="descendantsPartiallySelected(node)" (change)="itemSelectionToggle(node)">{{node.key}}
+                  [indeterminate]="descendantsPartiallySelected(node)" (contextmenu)="onContextMenu($event, node)"
+                  (change)="itemSelectionToggle(node)">
+                  {{node.key}}
+                  {{node.visible}}
                 </mat-checkbox>
-                <button mat-icon-button (click)="addNewItem(node)">
+                <button mat-icon-button (click)="projectManagerService.addNewItem(node)">
                   <mat-icon>add</mat-icon>
                 </button>
               </div>
@@ -52,13 +63,28 @@
             </li>
           </mat-nested-tree-node>
         </mat-tree>
+        <div style="visibility: hidden; position: fixed" [style.left]="contextMenuPosition.x"
+          [style.top]="contextMenuPosition.y" [matMenuTriggerFor]="contextMenu">
+        </div>
+        <mat-menu #contextMenu="matMenu" #contextMenu2="matMenu">
+          <ng-template matMenuContent let-item="item">
+            <button mat-menu-item (click)="onContextMenuAction1(item)">
+              <mat-icon>edit</mat-icon>
+              <span>Rename</span>
+            </button>
+            <button mat-menu-item (click)="onContextMenuAction2(item)">
+              <mat-icon>delete</mat-icon>
+              <span>Remove</span>
+            </button>
+          </ng-template>
+        </mat-menu>
       </div>
 
     </rsz-layout>
     <rsz-layout class="right-cell" [directions]="['none']" [rFlex]="true">
-        <ng-template ngFor let-nodeValue [ngForOf]="checklistSelection.selected">
-          <ng-template [ngIf]="nodeValue.final">
-          <mat-expansion-panel [expanded]="true">
+      <ng-template ngFor let-nodeValue [ngForOf]="checklistSelection.selected">
+        <ng-template [ngIf]="nodeValue.final">
+          <mat-expansion-panel [expanded]="true" style="width: 100%;">
             <mat-expansion-panel-header>
               <mat-panel-title>
                 {{nodeValue.value}}

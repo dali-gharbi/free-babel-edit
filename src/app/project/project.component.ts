@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ConfigStoreService } from '../core/services';
 import { ProjectManagerService } from '../core/services/project-manager.service';
 import { FlatTreeControl, NestedTreeControl } from '@angular/cdk/tree';
@@ -7,7 +7,9 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
 import { NewNodeDialogComponent } from '../shared/components/new-node-dialog/new-node-dialog.component';
 import { KeyNode } from './models/key-node';
-
+import { MatMenu, MatMenuTrigger } from '@angular/material';
+import { Subject, of, } from 'rxjs';
+import { map, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-project',
@@ -24,10 +26,10 @@ export class ProjectComponent implements OnInit {
   /** The selection for checklist */
   checklistSelection = new SelectionModel<KeyNode>(true /* multiple */);
 
-
+  searchKeyEvent: Subject<any> = new Subject();
+  filterText: string = null;
   constructor(public configStoreService: ConfigStoreService,
-    public projectManagerService: ProjectManagerService,
-    private dialog: MatDialog) { }
+    public projectManagerService: ProjectManagerService) { }
 
   ngOnInit() {
 
@@ -35,8 +37,30 @@ export class ProjectComponent implements OnInit {
     this.nestedDataSource = new MatTreeNestedDataSource();
     this.projectManagerService.filesData.subscribe(data => {
       // console.log(data);
-      this.nestedDataSource.data = this.buildFileTree(data['fr.json'], 0);
+      this.nestedDataSource.data = this.buildFileTree(this.getFirstFile, 0);
+      this.nestedTreeControl.dataNodes = this.nestedDataSource.data;
+      console.log(this.nestedTreeControl.dataNodes);
+      
     })
+
+    this.searchKeyEvent.pipe(
+      map((e: any) => e.target.value.toLowerCase()),
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((keyword: string) => {
+        if (keyword && keyword.length > 2) {
+          return of(keyword)
+        } else {
+          return of(null);
+        }
+      })).subscribe((text: string) => {
+        this.filterChanged(text);
+      })
+  }
+
+  get getFirstFile(): any {
+    return this.projectManagerService.filesData.value
+    [Object.keys(this.projectManagerService.filesData.value)[0]]
   }
 
   //#region #################### TREE VIEW ##################
@@ -165,14 +189,56 @@ export class ProjectComponent implements OnInit {
   /** begin filter  */
   filterChanged(filterText: string) {
     // this.database.filter(filterText);
+    this.filterText = filterText;
+    this.rebuildTreeWithFilter(filterText);
     if (filterText) {
       this.nestedTreeControl.expandAll();
     } else {
       this.nestedTreeControl.collapseAll();
     }
   }
+
+  rebuildTreeWithFilter(filterText: string) {
+    if (filterText) {
+      const filteredItems = this.nestedTreeControl.dataNodes.filter((node: KeyNode) => node.value.indexOf(filterText) === -1)
+      filteredItems.map(n => {
+        n.visible = false;
+      });
+    } else {
+      this.nestedTreeControl.dataNodes.forEach(x => x.visible = true);
+    }
+
+    // this.nestedDataSource.data = this.buildFileTree(this.getFirstFile, 0);
+  }
+
   //#endregion #################### TREE VIEW ##################
 
+  // region ########## context menu #############
+  @ViewChild(MatMenuTrigger, { static: false }) contextMenu: MatMenuTrigger;
+
+  contextMenuPosition = { x: '0px', y: '0px' };
+
+  onContextMenu(event: MouseEvent, item: KeyNode) {
+    console.log(item);
+
+    event.preventDefault();
+    this.contextMenuPosition.x = event.clientX + 'px';
+    this.contextMenuPosition.y = event.clientY + 'px';
+    this.contextMenu.menuData = { 'item': item };
+    this.contextMenu.menu.focusFirstItem('mouse');
+    this.contextMenu.openMenu();
+  }
+
+  onContextMenuAction1(item: KeyNode) {
+    console.log(item);
+    item.editing = true;
+    alert(`Click on Action 1 for ${item}`);
+  }
+
+  onContextMenuAction2(item: KeyNode) {
+    alert(`Click on Action 2 for ${item}`);
+  }
+  //endregion context menu
 
   // called when we selct node
   // editLeaf(node: KeyNode) {
@@ -221,25 +287,7 @@ export class ProjectComponent implements OnInit {
 
   /** fin managing value (right block) */
 
-  /** Select the category so we can insert the new item. */
-  addNewItem(node: KeyNode) {
-    // node.children.push({ key: null, children: [], final: false, value: node.value, level: node.level + 1 })
 
-
-    const dialogRef = this.dialog.open(NewNodeDialogComponent, {
-      width: '400px',
-      data: node
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      console.log(result);
-      console.log(node);
-      this.projectManagerService.addKeyToAllFiles(result.value, 'string');
-      if (result) {
-        this.nestedTreeControl.expand(node)
-      }
-    });
-  }
 
 }
 

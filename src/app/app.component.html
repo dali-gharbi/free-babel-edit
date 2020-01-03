@@ -14,14 +14,14 @@
         <span class="menu-spacer"></span>
         <span class="menu-spacer"></span>
         <button mat-icon-button matTooltip="Add ID" class="toolbar-icon">
-            <mat-icon (click)="saveProject()" inline=false>playlist_add</mat-icon>
+            <mat-icon (click)="addTranslationId()" inline=false>playlist_add</mat-icon>
         </button>
         <button mat-icon-button matTooltip="Remove IDs" class="toolbar-icon">
             <mat-icon (click)="saveProject()" inline=false>delete_sweep</mat-icon>
         </button>
         <span class="menu-spacer"></span>
         <button mat-icon-button matTooltip="Languages list" class="toolbar-icon">
-            <mat-icon (click)="saveProject()" inline=false>language</mat-icon>
+            <mat-icon [matBadge]="filesCount" matBadgeColor="accent" (click)="saveProject()" inline=false>language</mat-icon>
         </button>
         <button mat-icon-button matTooltip="Add language" class="toolbar-icon">
             <mat-icon (click)="saveProject()" inline=false>add_circle</mat-icon>

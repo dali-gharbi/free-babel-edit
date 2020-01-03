@@ -20,6 +20,8 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDialogModule} from '@angular/material/dialog';
 import { NewNodeDialogComponent } from './components/new-node-dialog/new-node-dialog.component';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatBadgeModule} from '@angular/material/badge';
+import {MatMenuModule} from '@angular/material/menu';
 
 const material = [
   MatButtonModule,
@@ -34,7 +36,9 @@ const material = [
   MatInputModule,
   MatCheckboxModule,
   MatDialogModule,
-  MatSnackBarModule
+  MatSnackBarModule,
+  MatBadgeModule,
+  MatMenuModule
 ];
 
 @NgModule({

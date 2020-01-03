@@ -8,6 +8,8 @@ export class KeyNode {
     final: boolean = false;
     value: string;
     parent?: KeyNode = null;
+    editing: boolean = false;
+    visible: boolean = true;
   
     /**
      *

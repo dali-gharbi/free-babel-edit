@@ -4,6 +4,9 @@ import { ConfigStoreService } from './config-store.service';
 import { Router } from '@angular/router';
 import { from, BehaviorSubject } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { KeyNode } from '../../project/models/key-node';
+import { MatDialog } from '@angular/material/dialog';
+import { NewNodeDialogComponent } from '../../shared/components/new-node-dialog/new-node-dialog.component';
 
 
 @Injectable({
@@ -17,6 +20,7 @@ export class ProjectManagerService {
     constructor(private electron: ElectronService,
         private configStoreService: ConfigStoreService,
         private snackBar: MatSnackBar,
+        private dialog: MatDialog,
         private router: Router) {
 
         //Initially load files in files Data
@@ -29,7 +33,10 @@ export class ProjectManagerService {
     /** correction du json */
     private pushKeys(keys: Map<string, string>, prefix: string, ...files: any[]) {
         for (let index = 0; index < files.length; index++) {
-            const obj = eval( 'files[index]' + prefix);
+            // console.log('file  files[index]' + prefix, files[index]);
+            const obj = eval('files[index]' + prefix);
+            // console.log(obj);
+            
             for (let key in obj) {
                 key = key.trim();
                 if (obj.hasOwnProperty(key)) {
@@ -48,7 +55,7 @@ export class ProjectManagerService {
         }
     }
 
-    private addMissingKeys(keys: Map<string, string>, prefix:string , ...files: any[]) {
+    private addMissingKeys(keys: Map<string, string>, prefix: string, ...files: any[]) {
         keys.forEach((t: string, k: string) => {
             for (let index = 0; index < files.length; index++) {
                 // for (const key in objects) {
@@ -57,23 +64,23 @@ export class ProjectManagerService {
                 // console.log('########### files[index]'+ prefix + '[k]');
 
                 // val dosent keep reference
-                const val = eval('files[index]'+ prefix + '[k]');
+                const val = eval('files[index]' + prefix + '[k]');
                 if (val === undefined) {
                     if (t === 'string') {
                         // val = '';
-                        eval('files[index]'+ prefix + '[k] = ""')
+                        eval('files[index]' + prefix + '[k] = ""')
                         console.log('init', k);
-                        this.snackBar.open('Initialized ' + prefix + '.' + k +' to empty string', 'OK', {
+                        this.snackBar.open('Initialized ' + prefix + '.' + k + ' to empty string', 'OK', {
                             duration: 2000,
-                          });
+                        });
 
                         // files[index][k] = '';
                     } else {
                         // val = {}
-                        eval('files[index]'+ prefix + '[k] = {}')
-                        this.snackBar.open('Initialized ' + prefix + '.' + k +' to empty object', 'OK', {
+                        eval('files[index]' + prefix + '[k] = {}')
+                        this.snackBar.open('Initialized ' + prefix + '.' + k + ' to empty object', 'OK', {
                             duration: 2000,
-                          });
+                        });
                         console.log('init', k);
                         // files[index][k] = {};
                     }
@@ -82,17 +89,17 @@ export class ProjectManagerService {
                     // files[index][k] = {};
                     console.log('converted to object', k);
                     // val = {};
-                    eval('files[index]'+ prefix + '[k] = {}')
+                    eval('files[index]' + prefix + '[k] = {}')
                 }
 
                 //     }
                 // }
             }
-            if(t === 'object') {
-                const mergedPrefix = prefix === '' ? ('.' +k) : (prefix + '.' + k);
-                // console.log( 'run recursion on' , mergedPrefix);
-                this.addMissingKeysToFiles(files, mergedPrefix)
-            }
+            // if (t === 'object') {
+            //     const mergedPrefix = prefix === '' ? ('.' + k) : (prefix + '.' + k);
+            //     console.log( 'run recursion on' , mergedPrefix);
+            //     this.addMissingKeysToFiles(files, mergedPrefix)
+            // }
         })
     }
 
@@ -101,6 +108,13 @@ export class ProjectManagerService {
         let keys: Map<string, string> = new Map<string, string>();
         this.pushKeys(keys, prefix, ...files);
         this.addMissingKeys(keys, prefix, ...files);
+        keys.forEach((t: string, k: string) => {
+            if (t === 'object') {
+                const mergedPrefix = prefix === '' ? ('["' + k + '"]') : (prefix + '["' + k + '"]');
+                // console.log( 'run recursion on' , mergedPrefix);
+                this.addMissingKeysToFiles(files, mergedPrefix)
+            }
+        });
     }
 
     // mergeKeys(object: any): string[] {
@@ -118,12 +132,12 @@ export class ProjectManagerService {
     private tryAddProperty(key: string, file: any, type: 'string' | 'object') {
         console.log(key);
         console.log(file);
-        
+
         try {
-            if(type === 'string') {
-                eval('file.' +key +' = ""')
+            if (type === 'string') {
+                eval('file.' + key + ' = ""')
             } else {
-                eval('file.' +key +' = {}')
+                eval('file.' + key + ' = {}')
             }
         } catch (error) {
             console.log(error);
@@ -139,6 +153,24 @@ export class ProjectManagerService {
         }
         this.filesData.next(this.filesData.value);
     }
+
+      /** Select the node so we can insert the new item. */
+  addNewItem(node?: KeyNode) {
+    // node.children.push({ key: null, children: [], final: false, value: node.value, level: node.level + 1 })
+    const dialogRef = this.dialog.open(NewNodeDialogComponent, {
+      width: '400px',
+      data: node || {}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      console.log(result);
+      console.log(node);
+      if (result) {
+        this.addKeyToAllFiles(result.value, 'string');
+        // this.nestedTreeControl.expand(node)
+      }
+    });
+  }
 
     openFolder(event) {
         from(this.electron.remote.dialog.showOpenDialog(this.electron.remote.getCurrentWindow(), {
@@ -164,40 +196,44 @@ export class ProjectManagerService {
         for (let index = 0; index < fileNames.length; index++) {
             const fileName: string = fileNames[index];
             // Do whatever you want to do with the file
-                const fullPath: string = this.electron.path.join(directory, fileName);
-                 //test if it's i18n file
-                // test if it's a file
-                if (this.electron.fs.lstatSync(fullPath).isFile() && fileName.indexOf('.json') > -1) {
-                    console.log('file', fileName);
-                    // test if it's a valid json
-                    let data: any = this.readJsonFile(fullPath);
-                    if (data) {
-                        filesData[fileName] = data;
-                        console.log('originaldata', data);
+            const fullPath: string = this.electron.path.join(directory, fileName);
+            //test if it's i18n file
+            // test if it's a file
+            if (this.electron.fs.lstatSync(fullPath).isFile() && fileName.indexOf('.json') > -1) {
+                console.log('file', fileName);
+                // test if it's a valid json
+                let data: any = this.readJsonFile(fullPath);
+                if (data) {
+                    filesData[fileName] = data;
+                    console.log('originaldata', data);
 
-                    } else {
-                        filesData[fileName] = {};
-                    }
+                } else {
+                    filesData[fileName] = {};
                 }
-        }
-
-        // ajout des keys manquants 
-        const filesName: any[] = new Array();
-        let filesValue: any[] = [];
-        for (const key in filesData) {
-            if (filesData.hasOwnProperty(key)) {
-                const element = filesData[key];
-                filesName.push(key);
-                filesValue.push(element);
             }
         }
-        this.addMissingKeysToFiles(filesValue);
-        for (let index = 0; index < filesName.length; index++) {
-            const name = filesName[index];
-            filesData[name] =  filesValue[index];
+
+        if (filesData !== {}) {
+            // ajout des keys manquants 
+            const filesName: any[] = new Array();
+            let filesValue: any[] = [];
+            for (const key in filesData) {
+                if (filesData.hasOwnProperty(key)) {
+                    const element = filesData[key];
+                    filesName.push(key);
+                    filesValue.push(element);
+                }
+            }
+            if (filesValue && filesValue.length)
+                this.addMissingKeysToFiles(filesValue);
+            for (let index = 0; index < filesName.length; index++) {
+                const name = filesName[index];
+                filesData[name] = filesValue[index];
+            }
+            // fin ajout des keys manquants 
         }
-        // fin ajout des keys manquants 
-        
+
+
         this.filesData.next(filesData);
         this.configStoreService.set('selectedDirectory', this.selectedDirectory);
         this.configStoreService.set('files', Object.keys(filesData));

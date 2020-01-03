@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  public filesCount: number = 0;
   constructor(
     private electronService: ElectronService,
     private translate: TranslateService,
@@ -29,6 +30,15 @@ export class AppComponent {
     } else {
       console.log('Mode web');
     }
+
+    this.projectManagerService.filesData.subscribe((files: any) => {
+      if(files) {
+       this.filesCount = Object.keys(files).length;
+      } else {
+        this.filesCount = 0;
+      }
+      
+    })
   }
 
   openProject(event){
@@ -37,6 +47,10 @@ export class AppComponent {
 
   saveProject() {
     this.projectManagerService.saveProject();
+  }
+
+  addTranslationId() {
+    this.projectManagerService.addNewItem();
   }
 
   quitProject() {
